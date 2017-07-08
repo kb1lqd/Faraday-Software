@@ -9,9 +9,9 @@ proxy_port = 'COM112'
 proxy_unitcnt = 1
 
 # Device Configuration
-rfbootpower = 25
+rfbootpower = 20
 uart_interval = 1
-rf_interval = 5
+rf_interval = 2
 
 # initialize configurations files
 print ("--- INITIALIZING PROXY SERVER ---")
@@ -27,7 +27,7 @@ call(['faraday-deviceconfiguration', '--proxycallsign', proxy_callsign, '--proxy
 call(['faraday-deviceconfiguration', '--redledtxon', '--greenledrxon'])
 call(['faraday-deviceconfiguration', '--gpsbooton', '--gpsenabled'])
 call(['faraday-deviceconfiguration', '--uarttelemetryenabled', '--uartinterval', str(uart_interval)])
-call(['faraday-deviceconfiguration', '--rftelemetrydisabled', '--rfinterval', str(rf_interval)])
+call(['faraday-deviceconfiguration', '--rftelemetryenabled', '--rfinterval', str(rf_interval)])
 call(['faraday-deviceconfiguration', '--bootrfpower', str(rfbootpower)])
 
 # initialize configurations files
