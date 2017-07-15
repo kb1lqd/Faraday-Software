@@ -33,13 +33,13 @@ def main():
     Main function of the transmit example of Hermes messaging application using Flask. This function loops continuously
     getting user input text to transmit to the Flask server for wireless transmission to the intended remote device.
     """
-    f = open(args.file, "rb")
-    try:
-        message = f.read()
-        print message
-        f.close()
-    except:
-        print "FAIL"
+    with open(args.file, "rb") as f:
+        try:
+            message = f.read()
+            print message
+            f.close()
+        except:
+            print "FAIL"
 
     frag_data_list = fragmentmsg(message, PACKET_PAYLOAD_LEN)
     sequence_cnt = 0
