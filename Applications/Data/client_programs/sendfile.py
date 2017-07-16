@@ -46,9 +46,9 @@ def main():
 
     frag_data_list_len = len(frag_data_list)
     print frag_data_list_len, frag_data_list
+    temp_dict = []
 
     for item in frag_data_list:
-        print "ITEM<", item
         if frag_data_list_len == 1:
             data_tx = packet_msg_struct.pack(str(proxylocalcallsign).upper(), proxylocalnodeid, 254, len(item), str(item))
         elif sequence_cnt == frag_data_list_len - 1:
@@ -57,12 +57,19 @@ def main():
             # Create datapacket
             data_tx = packet_msg_struct.pack(str(proxylocalcallsign).upper(), proxylocalnodeid, sequence_cnt, len(item), str(item))
         data_tx = base64.b64encode(data_tx)
-        payload = {'localcallsign': proxylocalcallsign, 'localnodeid': proxylocalnodeid,
-                   'destinationcallsign': destinationcallsign, 'destinationnodeid': destinationnodeid,
-                   'data': data_tx}
-        print("Transmitting [{0}]: {1}".format(str(sequence_cnt), data_tx))  # Not sure if properly showing up in CMD window...
-        requests.post('http://127.0.0.1:8009/', params=payload)
+
+        #print("Transmitting [{0}]: {1}".format(str(sequence_cnt), data_tx))  # Not sure if properly showing up in CMD window...
+        temp_dict.append(data_tx)
         sequence_cnt += 1
+    payload = {'localcallsign': proxylocalcallsign, 'localnodeid': proxylocalnodeid,
+               'destinationcallsign': destinationcallsign, 'destinationnodeid': destinationnodeid,
+               'data': temp_dict}
+    requests.post('http://127.0.0.1:8009/', params=payload)
+
+    print "PRINT"
+    print type(temp_dict), len(temp_dict)
+    print temp_dict
+
 
 
 def fragmentmsg(msg, fragmentsize):
