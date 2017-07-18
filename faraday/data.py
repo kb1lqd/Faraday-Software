@@ -145,20 +145,11 @@ def rfdataport():
         # Destination device not supported at this time. All transmissions are broadcast 'CQCQCQ' to all units.
         # destinationcallsign = request.args.get("destinationcallsign").upper()
         # destinationnodeid = request.args.get("destinationnodeid")
+
         data = request.data
-        #data = json.loads(data)
         logger.info("LOCALCALL: {0}".format(proxycallsign))
         logger.info("LOCALID: {0}".format(proxynodeid))
-        #logger.info("DATA: {0}".format(data))
-        # multi_dict = request.args
-        # for key in multi_dict:
-        #     print multi_dict.get(key)
-        #     print multi_dict.getlist(key)
-        #     print '\n'
-
         data2 = json.loads(data)
-        #logger.info("DATA LOADS: {0}".format(data2))
-
 
         #Decode all data in list, this is needed in order to frame the data contents with the data packet layer frame.
         temp_dict = []
@@ -186,7 +177,6 @@ def rfdataport():
                         logger.info("ITEM Packed: {0}".format(datapacket))
 
                         # Transmit data packet
-                        #faraday_1.POST(proxycallsign, proxynodeid, APP_DATA_UART_PORT, datapacket)
                         temp_dict.append(base64.b64encode(datapacket))
 
                 else:
@@ -198,13 +188,7 @@ def rfdataport():
                     temp_dict.append(base64.b64encode(datapacket))
 
         # Transmit data packet
-        #logger.info("TX: {0}".format(temp_dict))
-        #faraday_1.POST(proxycallsign, proxynodeid, APP_DATA_UART_PORT, datapacket)
-        #querystring = {'localcallsign': proxylocalcallsign, 'localnodeid': proxylocalnodeid,
-        #           'destinationcallsign': destinationcallsign, 'destinationnodeid': destinationnodeid}
         querystring = {"port":APP_DATA_UART_PORT,"nodeid":proxynodeid,"callsign":proxycallsign}
-        #data = json.loads(data)
-        #payload = {"data":data["data"]}
         payload = {"data":temp_dict}
         payload = json.dumps(payload)
 
