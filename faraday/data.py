@@ -156,52 +156,53 @@ def rfdataport():
         #     print multi_dict.getlist(key)
         #     print '\n'
 
-        data2 = json.loads(data)
-        logger.info("DATA LOADS: {0}".format(data2))
+        #data2 = json.loads(data)
+        #logger.info("DATA LOADS: {0}".format(data2))
 
 
         #Decode all data in list, this is unneeded and just needs to be passed to proxy as-is.
-        temp_dict = []
-        for items in data2["data"]:
-            logger.info("ITEMS: {0}".format(items))
-
-            try:
-                items = base64.b64decode(items)  # All incoming data packets must be BASE64
-            except TypeError as e:
-                logger.info("BASE64 data error: {0}".format(e))
-
-                # Return status
-                return json.dumps(
-                    {"status": "BASE64 data error."}), 400
-            else:
-                if len(data) > PAYLOAD_LEN:
-                    # Fragment data
-                    fragment_list = fragmentmsg(data, PAYLOAD_LEN)
-
-                    for item in fragment_list:
-                        # Create rfdataport application packet
-                        cmd = 0  # Data Frame
-                        seq = 0  # Not used, yet
-                        datapacket = packet_struct.pack(cmd, seq, str(item))
-
-                        # Transmit data packet
-                        #faraday_1.POST(proxycallsign, proxynodeid, APP_DATA_UART_PORT, datapacket)
-                        temp_dict.append(datapacket)
-
-                else:
-                    # Create rfdataport application packet
-                    cmd = 0  # Data Frame
-                    seq = 0  # Not used, yet
-                    datapacket = packet_struct.pack(cmd, seq, data)
-                    temp_dict.append(datapacket)
+        # temp_dict = []
+        # for items in data2["data"]:
+        #     logger.info("ITEMS: {0}".format(items))
+        #
+        #     try:
+        #         items = base64.b64decode(items)  # All incoming data packets must be BASE64
+        #     except TypeError as e:
+        #         logger.info("BASE64 data error: {0}".format(e))
+        #
+        #         # Return status
+        #         return json.dumps(
+        #             {"status": "BASE64 data error."}), 400
+        #     else:
+        #         if len(data2) > PAYLOAD_LEN:
+        #             # Fragment data
+        #             fragment_list = fragmentmsg(data2, PAYLOAD_LEN)
+        #
+        #             for item in fragment_list:
+        #                 # Create rfdataport application packet
+        #                 cmd = 0  # Data Frame
+        #                 seq = 0  # Not used, yet
+        #                 datapacket = packet_struct.pack(cmd, seq, str(item))
+        #
+        #                 # Transmit data packet
+        #                 #faraday_1.POST(proxycallsign, proxynodeid, APP_DATA_UART_PORT, datapacket)
+        #                 temp_dict.append(datapacket)
+        #
+        #         else:
+        #             # Create rfdataport application packet
+        #             cmd = 0  # Data Frame
+        #             seq = 0  # Not used, yet
+        #             datapacket = packet_struct.pack(cmd, seq, data2)
+        #             temp_dict.append(datapacket)
 
         # Transmit data packet
-        logger.info("TX: {0}".format(temp_dict))
+        #logger.info("TX: {0}".format(temp_dict))
         #faraday_1.POST(proxycallsign, proxynodeid, APP_DATA_UART_PORT, datapacket)
         #querystring = {'localcallsign': proxylocalcallsign, 'localnodeid': proxylocalnodeid,
         #           'destinationcallsign': destinationcallsign, 'destinationnodeid': destinationnodeid}
         querystring = {"port":APP_DATA_UART_PORT,"nodeid":proxynodeid,"callsign":proxycallsign}
-        payload = {"data":data}
+        data = json.loads(data)
+        payload = {"data":data["data"]}
         payload = json.dumps(payload)
 
         headers = {
