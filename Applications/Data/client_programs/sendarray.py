@@ -39,12 +39,12 @@ def main():
 
     #frag_data_list = fragmentmsg(message, PACKET_PAYLOAD_LEN)
     frag_data_list = []
-    for i in range(0,56):
+    for i in range(0,200):
         frag_data_list.append(packet_payload_struct.pack('\n' + str(i)))
     sequence_cnt = 0
 
     frag_data_list_len = len(frag_data_list)
-    #print frag_data_list_len, frag_data_list
+    print frag_data_list_len, frag_data_list_len%254
     temp_list = []
 
     for item in frag_data_list:
@@ -53,11 +53,16 @@ def main():
         elif sequence_cnt == frag_data_list_len - 1:
             data_tx = packet_msg_struct.pack(str(proxylocalcallsign).upper(), proxylocalnodeid, 255, len(item), str(item))
         else:
-            # Create datapacket
-            data_tx = packet_msg_struct.pack(str(proxylocalcallsign).upper(), proxylocalnodeid, sequence_cnt, len(item), str(item))
+            if(sequence_cnt<254):
+                # Create datapacket
+                data_tx = packet_msg_struct.pack(str(proxylocalcallsign).upper(), proxylocalnodeid, sequence_cnt, len(item), str(item))
+            else:
+                # Create datapacket
+                data_tx = packet_msg_struct.pack(str(proxylocalcallsign).upper(), proxylocalnodeid, sequence_cnt%254, len(item), str(item))
         data_tx = base64.b64encode(data_tx)
+        print sequence_cnt, sequence_cnt%254
 
-        print("Transmitting [{0}]: {1}".format(str(sequence_cnt), data_tx))  # Not sure if properly showing up in CMD window...
+        #print("Transmitting [{0}]: {1}".format(str(sequence_cnt), data_tx))  # Not sure if properly showing up in CMD window...
         temp_list.append(data_tx)
         sequence_cnt += 1
     querystring = {'localcallsign': proxylocalcallsign, 'localnodeid': proxylocalnodeid,
@@ -70,7 +75,7 @@ def main():
     'cache-control': "no-cache"
     }
 
-    print payload
+    #print payload
     requests.request("POST", 'http://127.0.0.1:8009', headers=headers, data=payload, params=querystring)
 
 
