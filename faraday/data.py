@@ -8,6 +8,7 @@ import struct
 import logging.config
 import argparse
 import shutil
+import requests
 
 from flask import Flask
 from flask import request
@@ -144,42 +145,76 @@ def rfdataport():
         # Destination device not supported at this time. All transmissions are broadcast 'CQCQCQ' to all units.
         # destinationcallsign = request.args.get("destinationcallsign").upper()
         # destinationnodeid = request.args.get("destinationnodeid")
-        data = request.args.get("data")
+        data = request.data
+        #data = json.loads(data)
+        logger.info("LOCALCALL: {0}".format(proxycallsign))
+        logger.info("LOCALID: {0}".format(proxynodeid))
+        #logger.info("DATA: {0}".format(data))
+        # multi_dict = request.args
+        # for key in multi_dict:
+        #     print multi_dict.get(key)
+        #     print multi_dict.getlist(key)
+        #     print '\n'
 
-        try:
-            data = base64.b64decode(data)  # All incoming data packets must be BASE64
-        except TypeError as e:
-            logger.info("BASE64 data error: {0}".format(e))
+        data2 = json.loads(data)
+        logger.info("DATA LOADS: {0}".format(data2))
 
-            # Return status
-            return json.dumps(
-                {"status": "BASE64 data error."}), 400
-        else:
-            if len(data) > PAYLOAD_LEN:
-                # Fragment data
-                fragment_list = fragmentmsg(data, PAYLOAD_LEN)
 
-                for item in fragment_list:
+        #Decode all data in list, this is unneeded and just needs to be passed to proxy as-is.
+        temp_dict = []
+        for items in data2["data"]:
+            logger.info("ITEMS: {0}".format(items))
+
+            try:
+                items = base64.b64decode(items)  # All incoming data packets must be BASE64
+            except TypeError as e:
+                logger.info("BASE64 data error: {0}".format(e))
+
+                # Return status
+                return json.dumps(
+                    {"status": "BASE64 data error."}), 400
+            else:
+                if len(data) > PAYLOAD_LEN:
+                    # Fragment data
+                    fragment_list = fragmentmsg(data, PAYLOAD_LEN)
+
+                    for item in fragment_list:
+                        # Create rfdataport application packet
+                        cmd = 0  # Data Frame
+                        seq = 0  # Not used, yet
+                        datapacket = packet_struct.pack(cmd, seq, str(item))
+
+                        # Transmit data packet
+                        #faraday_1.POST(proxycallsign, proxynodeid, APP_DATA_UART_PORT, datapacket)
+                        temp_dict.append(datapacket)
+
+                else:
                     # Create rfdataport application packet
                     cmd = 0  # Data Frame
                     seq = 0  # Not used, yet
-                    datapacket = packet_struct.pack(cmd, seq, str(item))
+                    datapacket = packet_struct.pack(cmd, seq, data)
+                    temp_dict.append(datapacket)
 
-                    # Transmit data packet
-                    faraday_1.POST(proxycallsign, proxynodeid, APP_DATA_UART_PORT, datapacket)
+        # Transmit data packet
+        logger.info("TX: {0}".format(temp_dict))
+        #faraday_1.POST(proxycallsign, proxynodeid, APP_DATA_UART_PORT, datapacket)
+        #querystring = {'localcallsign': proxylocalcallsign, 'localnodeid': proxylocalnodeid,
+        #           'destinationcallsign': destinationcallsign, 'destinationnodeid': destinationnodeid}
+        querystring = {"port":APP_DATA_UART_PORT,"nodeid":proxynodeid,"callsign":proxycallsign}
+        payload = {"data":data}
+        payload = json.dumps(payload)
 
-            else:
-                # Create rfdataport application packet
-                cmd = 0  # Data Frame
-                seq = 0  # Not used, yet
-                datapacket = packet_struct.pack(cmd, seq, data)
+        headers = {
+        'content-type': "application/json",
+        'cache-control': "no-cache"
+        }
 
-                # Transmit data packet
-                faraday_1.POST(proxycallsign, proxynodeid, APP_DATA_UART_PORT, datapacket)
+        print payload
+        requests.request("POST", 'http://127.0.0.1:8000', headers=headers, data=payload, params=querystring)
 
-            # Return status
-            return json.dumps(
-                {"status": "Posted Packet(s)"}), 200
+        # Return status
+        return json.dumps(
+            {"status": "Posted Packet(s)"}), 200
 
     # If GET
     else:

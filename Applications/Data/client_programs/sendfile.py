@@ -2,6 +2,7 @@ import requests
 import base64
 import struct
 import argparse
+import json
 
 INTERVAL_SEC = 0.001
 
@@ -21,7 +22,7 @@ parser.add_argument('--file', help='Filepath to file to be transmitted')
 # Parse the arguments
 args = parser.parse_args()
 
-print args
+#print args
 
 proxylocalcallsign = args.localcallsign
 proxylocalnodeid = args.localnodeid
@@ -36,7 +37,7 @@ def main():
     with open(args.file, "rb") as f:
         try:
             message = f.read()
-            print message
+            #print message
             f.close()
         except:
             print "FAIL"
@@ -45,8 +46,8 @@ def main():
     sequence_cnt = 0
 
     frag_data_list_len = len(frag_data_list)
-    print frag_data_list_len, frag_data_list
-    temp_dict = []
+    #print frag_data_list_len, frag_data_list
+    temp_list = []
 
     for item in frag_data_list:
         if frag_data_list_len == 1:
@@ -59,16 +60,20 @@ def main():
         data_tx = base64.b64encode(data_tx)
 
         #print("Transmitting [{0}]: {1}".format(str(sequence_cnt), data_tx))  # Not sure if properly showing up in CMD window...
-        temp_dict.append(data_tx)
+        temp_list.append(data_tx)
         sequence_cnt += 1
-    payload = {'localcallsign': proxylocalcallsign, 'localnodeid': proxylocalnodeid,
-               'destinationcallsign': destinationcallsign, 'destinationnodeid': destinationnodeid,
-               'data': temp_dict}
-    requests.post('http://127.0.0.1:8009/', params=payload)
+    querystring = {'localcallsign': proxylocalcallsign, 'localnodeid': proxylocalnodeid,
+               'destinationcallsign': destinationcallsign, 'destinationnodeid': destinationnodeid}
+    payload = {"data":temp_list}
+    payload = json.dumps(payload)
 
-    print "PRINT"
-    print type(temp_dict), len(temp_dict)
-    print temp_dict
+    headers = {
+    'content-type': "application/json",
+    'cache-control': "no-cache"
+    }
+
+    print payload
+    requests.request("POST", 'http://127.0.0.1:8009', headers=headers, data=payload, params=querystring)
 
 
 
