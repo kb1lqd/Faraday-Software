@@ -59,7 +59,7 @@ def main():
             data_tx = packet_msg_struct.pack(str(proxylocalcallsign).upper(), proxylocalnodeid, sequence_cnt, len(item), str(item))
         data_tx = base64.b64encode(data_tx)
 
-        #print("Transmitting [{0}]: {1}".format(str(sequence_cnt), data_tx))  # Not sure if properly showing up in CMD window...
+        print("Transmitting [{0}]: {1}".format(str(sequence_cnt), data_tx))  # Not sure if properly showing up in CMD window...
         temp_list.append(data_tx)
         sequence_cnt += 1
     querystring = {'localcallsign': proxylocalcallsign, 'localnodeid': proxylocalnodeid,
