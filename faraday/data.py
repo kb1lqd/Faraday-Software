@@ -176,7 +176,7 @@ def rfdataport():
                         cmd = 0  # Data Frame
                         seq = 0  # Not used, yet
                         datapacket = packet_struct.pack(cmd, seq, str(item))
-                        logger.info("ITEM Packed: {0}".format(datapacket))
+                        #logger.info("ITEM Packed: {0}".format(datapacket))
 
                         # Transmit data packet
                         temp_dict.append(base64.b64encode(datapacket))
@@ -186,7 +186,7 @@ def rfdataport():
                     cmd = 0  # Data Frame
                     seq = 0  # Not used, yet
                     datapacket = packet_struct.pack(cmd, seq, items)
-                    logger.info("ITEM Packed: {0}".format(datapacket))
+                    #logger.info("ITEM Packed: {0}".format(datapacket))
                     temp_dict.append(base64.b64encode(datapacket))
 
         # Transmit data packet
