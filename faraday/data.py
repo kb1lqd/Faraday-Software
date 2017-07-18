@@ -115,6 +115,8 @@ if not args.start:
 
 host = dataConfig.get("FLASK", "HOST")
 port = dataConfig.get("FLASK", "PORT")
+proxyhost = dataConfig.get("PROXY", "HOST")
+proxyport = dataConfig.get("PROXY", "PORT")
 
 # Global variables
 packet_struct = struct.Struct('2B 40s')
@@ -198,7 +200,7 @@ def rfdataport():
         }
 
         print payload
-        requests.request("POST", 'http://127.0.0.1:8000', headers=headers, data=payload, params=querystring)
+        requests.request("POST", 'http://' + str(proxyhost) + ':' + str(proxyport), headers=headers, data=payload, params=querystring)
 
         # Return status
         return json.dumps(
