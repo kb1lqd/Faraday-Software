@@ -46,11 +46,15 @@ def main():
 
 
     for i in range(0,(len(frag_data_list)/56)+1):
-        index_bottom = i*56
+        if i == 0:
+            index_bottom = 0
+        else:
+            index_bottom = i*56-1
         if(((i+1)*56)>len(frag_data_list)):
             index_top = len(frag_data_list)-1
         else:
             index_top = (i+1)*56-1
+        print index_bottom, index_top
 
         send(frag_data_list[index_bottom:index_top])
 
