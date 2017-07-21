@@ -281,6 +281,8 @@ def post_worker():
         # Place data into the FIFO coming from UART
         time.sleep(0.5)
         logger.info("Queue: {0} - {1}".format(postQueue.empty(), postQueue.qsize()))
+        while (not postQueue.empty()):
+            print repr(postQueue.get())
 
 
 def main():
