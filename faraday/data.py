@@ -162,8 +162,11 @@ def rfdataport():
 
         #Decode all data in list, this is needed in order to frame the data contents with the data packet layer frame.
         temp_dict = []
+        # Create rfdataport application packet
+        cmd = 0  # Data Frame
+        seq = 0  # Not used, yet
         for items in data2["data"]:
-            logger.info("ITEMS: {0}".format(items))
+            #logger.info("ITEMS: {0}".format(items))
 
             try:
                 items = base64.b64decode(items)  # All incoming data packets must be BASE64
@@ -179,22 +182,25 @@ def rfdataport():
                     fragment_list = fragmentmsg(data2, PAYLOAD_LEN)
 
                     for item in fragment_list:
-                        # Create rfdataport application packet
-                        cmd = 0  # Data Frame
-                        seq = 0  # Not used, yet
+
                         datapacket = packet_struct.pack(cmd, seq, str(item))
                         #logger.info("ITEM Packed: {0}".format(datapacket))
 
                         # Transmit data packet
                         temp_dict.append(base64.b64encode(datapacket))
+                        logger.info("SEQ = {0}".format(seq))
+                        seq = seq + 1
+
 
                 else:
-                    # Create rfdataport application packet
-                    cmd = 0  # Data Frame
-                    seq = 0  # Not used, yet
+
                     datapacket = packet_struct.pack(cmd, seq, items)
                     #logger.info("ITEM Packed: {0}".format(datapacket))
                     temp_dict.append(base64.b64encode(datapacket))
+                    logger.info("SEQ = {0}".format(seq))
+                    seq = seq + 1
+                #Place data into queue
+                postQueue.put(datapacket)
 
         # Transmit data packet
         querystring = {"port":APP_DATA_UART_PORT,"nodeid":proxynodeid,"callsign":proxycallsign}
@@ -206,7 +212,6 @@ def rfdataport():
         'cache-control': "no-cache"
         }
 
-        print payload
         requests.request("POST", 'http://' + str(proxyhost) + ':' + str(proxyport), headers=headers, data=payload, params=querystring)
 
         # Return status
@@ -265,25 +270,25 @@ def fragmentmsg(msg, fragmentsize):
     return list_message_fragments
 
 
-# def post_worker():
-#     """
-#     Threading worker to pull from TX queue.
-#     """
-#     logger.info('Starting post_worker thread')
-#
-#     # Loop
-#     while True:
-#         # Place data into the FIFO coming from UART
-#         time.sleep(0.5)
-#         logger.info("Queue: {0}".format(postQueue.empty()))
+def post_worker():
+    """
+    Threading worker to pull from TX queue.
+    """
+    logger.info('Starting post_worker thread')
+
+    # Loop
+    while True:
+        # Place data into the FIFO coming from UART
+        time.sleep(0.5)
+        logger.info("Queue: {0} - {1}".format(postQueue.empty(), postQueue.qsize()))
 
 
 def main():
     """Main function which starts the Flask server."""
 
-    # # Start workers
-    # t = threading.Thread(target=post_worker)
-    # t.start()
+    # Start workers
+    t = threading.Thread(target=post_worker)
+    t.start()
 
     # Start the flask server
     app.run(host=host, port=port, threaded=True)
