@@ -9,6 +9,9 @@ import logging.config
 import argparse
 import shutil
 import requests
+import Queue
+import threading
+import time
 
 from flask import Flask
 from flask import request
@@ -58,6 +61,10 @@ parser.add_argument('--start', action='store_true', help='Start Data server')
 
 # Parse the arguments
 args = parser.parse_args()
+
+# GlobalDicts
+postDict = {}
+postQueue = Queue.Queue()
 
 
 def initializeDataConfig():
@@ -258,8 +265,25 @@ def fragmentmsg(msg, fragmentsize):
     return list_message_fragments
 
 
+def post_worker():
+    """
+    Threading worker to pull from TX queue.
+    """
+    logger.info('Starting post_worker thread')
+
+    # Loop
+    while True:
+        # Place data into the FIFO coming from UART
+        time.sleep(0.5)
+        logger.info("Queue: {0}".format(postQueue.empty()))
+
+
 def main():
     """Main function which starts the Flask server."""
+
+    # Start workers
+    t = threading.Thread(target=post_worker)
+    t.start()
 
     # Start the flask server
     app.run(host=host, port=port, threaded=True)
