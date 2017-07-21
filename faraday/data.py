@@ -265,25 +265,25 @@ def fragmentmsg(msg, fragmentsize):
     return list_message_fragments
 
 
-def post_worker():
-    """
-    Threading worker to pull from TX queue.
-    """
-    logger.info('Starting post_worker thread')
-
-    # Loop
-    while True:
-        # Place data into the FIFO coming from UART
-        time.sleep(0.5)
-        logger.info("Queue: {0}".format(postQueue.empty()))
+# def post_worker():
+#     """
+#     Threading worker to pull from TX queue.
+#     """
+#     logger.info('Starting post_worker thread')
+#
+#     # Loop
+#     while True:
+#         # Place data into the FIFO coming from UART
+#         time.sleep(0.5)
+#         logger.info("Queue: {0}".format(postQueue.empty()))
 
 
 def main():
     """Main function which starts the Flask server."""
 
-    # Start workers
-    t = threading.Thread(target=post_worker)
-    t.start()
+    # # Start workers
+    # t = threading.Thread(target=post_worker)
+    # t.start()
 
     # Start the flask server
     app.run(host=host, port=port, threaded=True)
