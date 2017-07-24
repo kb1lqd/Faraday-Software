@@ -19,7 +19,7 @@ temp_msg = []
 
 server_address = ('localhost', 10000)
 print 'connecting to {0} port {1}'.format(server_address[0], server_address[1])
-#sock.connect(server_address)
+sock.connect(server_address)
 message = ''
 count = 0
 start_time = time.time()
@@ -27,7 +27,7 @@ while True:
     #temp_msg.append(count)
     temp_queue.put(count)
     #message = packetstruct.pack(count)
-    #sock.sendall(message)
+
     time.sleep(delay_interval_sec)
     if count >= 255:
         count = 0
@@ -39,7 +39,9 @@ while True:
         for i in range(0, queue_get_size):
             temp_list.append(temp_queue.get())
         print temp_queue.qsize(), temp_list
-        print packetstruct.pack(*temp_list)
+        msg = packetstruct.pack(*temp_list)
+        print msg
+        sock.sendall(msg)
         temp_msg = []
         start_time = time.time()
 
