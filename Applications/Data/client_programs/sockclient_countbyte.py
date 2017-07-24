@@ -3,6 +3,8 @@ import sys
 import time
 import struct
 
+delay_interval_sec = 0.01
+
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 packetstruct = struct.Struct('B')
@@ -15,6 +17,7 @@ count = 0
 while True:
     message = packetstruct.pack(count)
     sock.sendall(message)
+    time.sleep(delay_interval_sec)
     if count >= 255:
         count = 0
     else:

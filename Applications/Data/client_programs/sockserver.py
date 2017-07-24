@@ -2,6 +2,7 @@ import socket
 import sys
 import time
 
+
 server_address = ('localhost', 10000)
 
 def listen():
@@ -30,8 +31,7 @@ def listen():
                             current_connection.close()
                             break
                         else:
-                            print repr(data), len(data), type(data)
-                            print data
+                            print 'RX Data({0}): {1}'.format(len(data), repr(data))
                     else:
                         pass
             except socket.error as e:
