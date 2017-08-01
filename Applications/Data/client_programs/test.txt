@@ -1,0 +1,3 @@
+We believe data is the future of amateur radio. Data is data whether it's voice, telemetry, messages, or another piece of information. In order for ham radio to remain relevant it must adapt to the needs of the coming generation of experimenters and hobbyists. We've developed Faraday and all necessary code to provide the hardware and software necessary to enable the shift towards a data-centric amateur radio.
+
+Faraday is an open digital radio that will enable radio amateurs to determine the future of ham radio. 
