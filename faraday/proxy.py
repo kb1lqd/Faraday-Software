@@ -277,7 +277,7 @@ def startServer(modem, dataPort):
             result = 1
             result = sock.connect_ex((host, port))
 
-        except socket.error as e:
+        except IOError as e:
             logger.warning(e)
 
     logger.info("Started server on {0}:{1}".format(host, port))
@@ -430,16 +430,16 @@ def testdb_read_worker():
 
 def acceptConnection(server, faraday):
     conn, addr = server.accept()
-    logger.info("Got connection from {0} on {1}".format(addr, faraday))
+    logger.debug("Got connection from {0} on {1}".format(addr, faraday))
     return conn, addr
 
 
 def closeConnection(conn, addr, faraday):
     # close the connection
-    logger.info("Closing connection with {0} on {1}".format(addr, faraday))
+    logger.debug("Closing connection with {0} on {1}".format(addr, faraday))
     try:
         conn.close()
-    except socket.error as e:
+    except IOError as e:
         logger.error(e)
 
 
@@ -462,8 +462,8 @@ def receiveData(conn, addr, dataBuffer, unit):
     while True:
         try:
             data = conn.recv(4096)
-        except socket.error as e:
-            logger.error(e)
+        except IOError as e:
+            logger.warning(e)
             closeConnection(conn, addr, unit)
             break
 
@@ -476,9 +476,8 @@ def receiveData(conn, addr, dataBuffer, unit):
 
 
 def sendData(conn, addr, getDicts, unit, payloadSize):
-    while True:
+    while len(getDicts[unit][1]):
         # not sure why I need a delay... otherwise socket closes
-        time.sleep(0.05)
         dataQueue = []
         try:
             dataQueue = getDicts[unit][1]
@@ -506,21 +505,47 @@ def sendData(conn, addr, getDicts, unit, payloadSize):
             logger.error(e)
 
         # unpack frames and retrieve data originally sent to socket
-        try:
-            dataList = struct.unpack("BB121s", data)
-            dataList2 = struct.unpack("B{0}s".format(payloadSize), dataList[2][:payloadSize + 1])
-            socketData = dataList2[1][:dataList2[0]]
-
-        except struct.error as e:
-            logger.error(e)
-
-        else:
+        if len(data) == 123:
             try:
-                conn.sendall(socketData)
+                logger.debug(len(data))
+                logger.debug(repr(data))
+                dataList = struct.unpack("BB121s", data)
+                dataList2 = struct.unpack("B{0}s".format(payloadSize), dataList[2][:payloadSize + 1])
+                socketData = dataList2[1][:dataList2[0]]
 
-            except socket.error as e:
-                closeConnection(conn, addr, unit)
-                break
+            except struct.error as e:
+                logger.warning(e)
+                logger.warning(len(data))
+                logger.warning(repr(data))
+
+            else:
+                try:
+                    conn.sendall(socketData)
+
+                except IOError as e:
+                    closeConnection(conn, addr, unit)
+                    break
+
+        if len(data) == 42:
+            try:
+                logger.debug(len(data))
+                logger.debug(repr(data))
+                dataList = struct.unpack("BB{0}s".format(payloadSize + 1), data)
+                dataList2 = struct.unpack("B{0}s".format(payloadSize), dataList[2][:payloadSize + 1])
+                socketData = dataList2[1][:dataList2[0]]
+
+            except struct.error as e:
+                logger.warning(e)
+                logger.warning(len(data))
+                logger.warning(repr(data))
+
+            else:
+                try:
+                    conn.sendall(socketData)
+
+                except IOError as e:
+                    closeConnection(conn, addr, unit)
+                    break
 
 
 def socket_worker(modem, getDicts, dataPort, dataBuffer):
@@ -539,6 +564,7 @@ def socket_worker(modem, getDicts, dataPort, dataBuffer):
     server.listen(5)
     while True:
         # continuously accept connections and read data from socket to buffers
+        # TODO, move accept code
         conn, addr = acceptConnection(server, unit)
         receiveData(conn, addr, dataBuffer, unit)
 
@@ -557,10 +583,29 @@ def socket_worker_RX(modem, getDicts, dataPort, dataBuffer, payloadSize):
 
     # Listen to server in infinit loop
     server.listen(5)
+    try:
+        conn, addr = acceptConnection(server, unit)
+        logger.info(conn)
+    except IOError as e:
+        logger.error(e)
+
     while True:
         # continuously accept connections and send data to socket from get buffer
-        conn, addr = acceptConnection(server, unit)
-        sendData(conn, addr, getDicts, unit, payloadSize)
+        try:
+            try:
+                getDicts[unit][1]
+            except:
+                # No data received yet so dictionary item doesn't exist
+                time.sleep(1)
+            else:
+                try:
+                    sendData(conn, addr, getDicts, unit, payloadSize)
+                except:
+                    logger.warning("closing connection...")
+                    closeConnection(conn, addr, unit)
+        except socket.error as e:
+            logger.warning(e)
+            closeConnection(conn, addr, unit)
 
 
 def createPacket(data, size):
@@ -580,9 +625,9 @@ def createPacket(data, size):
             pass
     # Join list together and append two control bytes, convert to BASE64
     try:
-
+        # TODO: Use better method of MSP430 header allocation
         payload = ''.join(temp)
-        preamble = struct.pack("BB", 0, 0)  # Preamble is two 0's at this time
+        preamble = struct.pack("BB", 0, 0)  # Header for MSP430 firmware
         size = struct.pack("B", len(payload))
         framedPayload = size + payload
         packet = (preamble + framedPayload).encode('base64', 'strict')  # Proxy expects BASE64
@@ -591,7 +636,7 @@ def createPacket(data, size):
         logger.error(e)
 
     except struct.error as e:
-        logger.error(e)
+        logger.warning(e)
 
     except UnicodeError as e:
         logger.error(e)
@@ -1084,13 +1129,8 @@ def main():
             w.start()
 
             logger.debug("starting bufferWorker")
-            try:
-
-                v = threading.Thread(target=bufferWorker, args=(tempdict, postDicts, dataBuffer, payloadSize))
-
-                v.start()
-            except:
-                logger.error("crap")
+            v = threading.Thread(target=bufferWorker, args=(tempdict, postDicts, dataBuffer, payloadSize))
+            v.start()
 
             dataPort += 1
     else:
