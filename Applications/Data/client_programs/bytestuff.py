@@ -1,4 +1,5 @@
 import struct
+import sys
 
 framing_startbyte = chr(0x7b)
 framing_stopbyte = chr(0x7c)
@@ -399,7 +400,8 @@ class rxparse(object):
                     elif (rx_byte == stopbyte):
                         self.logic_startbyte_received = False
                         #print "RECEIVED FRAME: ", repr(self.partial_packet)
-                        return self.partial_packet
+                        #sys.stdout.write(self.partial_packet)
+                        return str(self.partial_packet)
                     # Received byte is start byte - Current packet is currupted and found next packet header (potentially)!
                     elif (rx_byte == startbyte):
                         self.logic_startbyte_received = True
@@ -407,7 +409,8 @@ class rxparse(object):
                         #print "START"
                     # Unknown State - Error
                     else:
-                        print  'Partial Packet: {0}'.format(str(self.partial_packet))
+                        pass
+                        #print  'Partial Packet: {0}'.format(str(self.partial_packet))
                 # Check if current BYTE is being escaped (framing) - TRUE
                 elif self.logic_escapebyte_received:
                     # Escaped Packet data received
@@ -417,7 +420,9 @@ class rxparse(object):
                         self.partial_packet += rx_byte
                     # Unknown State - Error
                     else:
-                        print 'Partial Packet: {0}'.format(str(self.partial_packet))
+                        pass
+                        #print 'Partial Packet: {0}'.format(str(self.partial_packet))
             # Unknown State - Error
             else:
-                print 'Partial Packet: {0}'.format(str(self.partial_packet))
+                pass
+                #print 'Partial Packet: {0}'.format(str(self.partial_packet))
