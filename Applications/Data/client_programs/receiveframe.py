@@ -1,6 +1,7 @@
 import socket               # Import socket module
 import time
 import argparse
+import sys
 
 # Get arguments
 parser = argparse.ArgumentParser()
@@ -28,7 +29,7 @@ try:
         s.sendall(" ")
         temp = s.recv(4096)
         if temp != 'No Data! Goodbye.':
-            print temp
+            sys.stdout.write(temp)
         else:
             alive = False
 except StandardError as e:
