@@ -3,16 +3,23 @@ import time
 import struct
 import bytestuff
 import argparse
+import sys
+
+data = ''
 
 # Get arguments
 parser = argparse.ArgumentParser()
 parser.add_argument("fragsize", type=int, help="Fragment size in bytes of data", default=16)
-parser.add_argument("data", help="Data string to be transmitted.")
+parser.add_argument("--data", help="Data string to be transmitted.")
 args = parser.parse_args()
 
 # Parse arguments
 STRUCTSIZE = args.fragsize
-data = args.data
+if args.data is not None:
+    data = args.data
+else:
+    for line in sys.stdin:
+        data = data + line #  Concatenate stdin lines to single string
 
 # Create data fragments as needed
 datafrag = bytestuff.fragmentmsg(data, STRUCTSIZE)
