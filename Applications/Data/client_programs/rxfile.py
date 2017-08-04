@@ -5,6 +5,7 @@ import bytestuff
 import argparse
 import sys
 import json
+import base64
 
 # Get arguments
 parser = argparse.ArgumentParser()
@@ -21,7 +22,7 @@ if args.json:
     for line in rxdata:
         temp = json.loads(line)
         for item in temp:
-            rxdata_list.append(item)
+            rxdata_list.append(base64.b64decode(item))  # Decode BASE64 due to stdin and stdout binary issues
 else:
     for line in rxdata:
         rxdata_list.append(line)

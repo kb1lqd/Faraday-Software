@@ -4,6 +4,11 @@ import struct
 import bytestuff
 import argparse
 import sys
+import os
+import msvcrt
+
+if sys.platform == "win32":
+    msvcrt.setmode(sys.stdout.fileno(), os.O_BINARY)
 
 data = ''
 
@@ -19,7 +24,7 @@ if args.data is not None:
     data = args.data
 else:
     for line in sys.stdin:
-        data = data + line #  Concatenate stdin lines to single string
+        data = data + line  # Concatenate stdin lines to single string
 
 # Create data fragments as needed
 datafrag = bytestuff.fragmentmsg(data, STRUCTSIZE)
