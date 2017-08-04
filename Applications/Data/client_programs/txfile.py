@@ -11,7 +11,7 @@ args = parser.parse_args()
 filepath = args.filepath
 
 
-with open(filepath, 'r') as f:
+with open(filepath, 'rb') as f:
     read_data = f.read()
 
 sys.stdout.write(read_data)
