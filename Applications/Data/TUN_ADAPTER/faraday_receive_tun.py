@@ -19,7 +19,7 @@ alive = True
 
 s = socket.socket()         # Create a socket object
 #s.setblocking(False)
-s.settimeout(2)
+s.settimeout(5)
 host = socket.gethostname() # Get local machine name
 port = 10011               # Reserve a port for your service.
 s.connect((host, port))
@@ -35,6 +35,7 @@ try:
 except StandardError as e:
     print e
     pass
+
 
 finally:
     print"Closing socket connection."
