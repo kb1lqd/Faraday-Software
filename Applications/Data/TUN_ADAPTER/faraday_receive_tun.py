@@ -2,6 +2,7 @@ import socket               # Import socket module
 import time
 import argparse
 import sys
+import dpkt
 
 # Get arguments
 #parser = argparse.ArgumentParser()
@@ -29,7 +30,10 @@ try:
         s.sendall(" ")
         temp = s.recv(4096)
         if temp != 'No Data! Goodbye.':
-            sys.stdout.write(temp)
+            #temp = dpkt.udp.UDP(temp)
+            #temp = dpkt.ip.IP(temp)
+            print repr(temp)
+            #sys.stdout.write(temp)
         else:
             alive = False
 except StandardError as e:
