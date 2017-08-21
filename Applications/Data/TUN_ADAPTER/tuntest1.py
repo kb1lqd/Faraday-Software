@@ -2,6 +2,10 @@ import fcntl
 import os
 import select
 import struct
+from subprocess import call
+import time
+import sys
+import sendframe2
 
 TUNSETIFF = 0x400454ca
 TUNSETOWNER = TUNSETIFF + 2
@@ -38,4 +42,6 @@ while True:
         print "RX Data (LEN = {0})".format(len(rxdata))
         print "ORIG: {0}".format(rxdata)
         print "RAW: {0}".format(repr(rxdata))
+	sendframe2.send(rxdata)
+	#call(['echo "Test" | python sendframe.py'])
         #os.write(s, rxdata)
