@@ -38,3 +38,4 @@ while True:
         print "RX Data (LEN = {0})".format(len(rxdata))
         print "ORIG: {0}".format(rxdata)
         print "RAW: {0}".format(repr(rxdata))
+        #os.write(s, rxdata)
