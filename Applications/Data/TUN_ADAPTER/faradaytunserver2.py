@@ -39,12 +39,12 @@ tun_fd = tun.fileno()
 while True:
 
     try:
-        s = socket.socket()  # Create a socket object
+        sock = socket.socket()  # Create a socket object
         # s.setblocking(False)
         # s.settimeout(5)
         host = socket.gethostname()  # Get local machine name
         port = 10011  # Reserve a port for your service.
-        s.connect((host, port))
+        sock.connect((host, port))
 
         read, write, exc = select.select([tun_fd, ], [tun_fd, ], [])
 
@@ -58,24 +58,24 @@ while True:
         # call(['echo "Test" | python sendframe.py'])
 
         time.sleep(0.01)
-        s.sendall(" ")
-        temp = s.recv(2048)
+        sock.sendall(" ")
+        temp = sock.recv(2048)
         if temp != 'No Data! Goodbye.':
             #temp = dpkt.udp.UDP(temp)
             #temp = dpkt.ip.IP(temp)
             print repr(temp)
-            os.write(s, rxdata)
+            os.write(tun_fd, temp)
             #sys.stdout.write(temp)
         else:
             alive = False
     except StandardError as e:
-        #print e
+        print e
         pass
     except socket.timeout as e:
         pass
     finally:
         #print"Closing socket connection."
-        s.close()
+        sock.close()
 
 
 
