@@ -6,6 +6,7 @@ from subprocess import call
 import time
 import sys
 import faraday_send_tun
+import socket
 
 TUNSETIFF = 0x400454ca
 TUNSETOWNER = TUNSETIFF + 2
@@ -33,15 +34,50 @@ os.system('ip route add 192.178.90.2/32 dev tun1')
 
 tun_fd = tun.fileno()
 
-while True:
-    read, write, exc = select.select([tun_fd,], [tun_fd,], [])
 
-    for s in read:
-        rxdata = os.read(s, 1500)
-        print '\n'
-        print "RX Data (LEN = {0})".format(len(rxdata))
-        print "ORIG: {0}".format(rxdata)
-        print "RAW: {0}".format(repr(rxdata))
-        #faraday_send_tun.send(rxdata)
-	#call(['echo "Test" | python sendframe.py'])
-        #os.write(s, rxdata)
+
+while True:
+
+    try:
+        s = socket.socket()  # Create a socket object
+        # s.setblocking(False)
+        # s.settimeout(5)
+        host = socket.gethostname()  # Get local machine name
+        port = 10011  # Reserve a port for your service.
+        s.connect((host, port))
+
+        read, write, exc = select.select([tun_fd, ], [tun_fd, ], [])
+
+        #for s in read:
+        #    rxdata = os.read(s, 1500)
+        #    print '\n'
+        #    print "RX Data (LEN = {0})".format(len(rxdata))
+        #    print "ORIG: {0}".format(rxdata)
+        #    print "RAW: {0}".format(repr(rxdata))
+            # faraday_send_tun.send(rxdata)
+        # call(['echo "Test" | python sendframe.py'])
+
+        time.sleep(0.01)
+        s.sendall(" ")
+        temp = s.recv(2048)
+        if temp != 'No Data! Goodbye.':
+            #temp = dpkt.udp.UDP(temp)
+            #temp = dpkt.ip.IP(temp)
+            print repr(temp)
+            os.write(s, rxdata)
+            #sys.stdout.write(temp)
+        else:
+            alive = False
+    except StandardError as e:
+        #print e
+        pass
+    except socket.timeout as e:
+        pass
+    finally:
+        #print"Closing socket connection."
+        s.close()
+
+
+
+
+                     # Close the socket when done
